@@ -1,8 +1,8 @@
 [gd_scene format=3 uid="uid://b8q02e5g57tx4"]
 
-[ext_resource type="PackedScene" uid="uid://cwfsllri0m51o" path="res://character/uploads_files_5300320_RobloxRig.glb" id="1_2orxn"]
 [ext_resource type="Script" uid="uid://ypneyahtpnck" path="res://character/player.gd" id="1_monf5"]
 [ext_resource type="Script" uid="uid://5pbiggcq3lln" path="res://character/camera_3d.gd" id="3_aypkh"]
+[ext_resource type="PackedScene" uid="uid://bqn7xr4afyk5h" path="res://character/Character.glb" id="3_hhoun"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_aypkh"]
 size = Vector3(0.4, 1.3000001, 0.2)
@@ -18,11 +18,6 @@ size = Vector3(0.8, 1.14, 0.2)
 floor_max_angle = 1.553343
 script = ExtResource("1_monf5")
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=1797661307]
-
-[node name="uploads_files_5300320_RobloxRig" parent="MeshInstance3D" unique_id=2027506264 instance=ExtResource("1_2orxn")]
-transform = Transform3D(0.2, 0, 0, 0, 0.2, 0, 0, 0, 0.2, 0, 0, 0)
-
 [node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=430059723]
 transform = Transform3D(1, 0, 0, 0, 0.6, 0, 0, 0, 1, -1.4901161e-08, 0.40999997, -2.9802322e-08)
 shape = SubResource("BoxShape3D_aypkh")
@@ -33,7 +28,7 @@ script = ExtResource("3_aypkh")
 target = NodePath("..")
 
 [node name="RayCast3D" type="RayCast3D" parent="." unique_id=212384371]
-transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 0.100000046, 0.1)
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 0.14000005, 0.1)
 target_position = Vector3(0, -0.1, 0)
 script = SubResource("GDScript_aypkh")
 
@@ -61,5 +56,8 @@ target_position = Vector3(0, -0.4, 0.7)
 [node name="flickRay4" type="RayCast3D" parent="." unique_id=1295963090]
 transform = Transform3D(-2.9802322e-07, 0, 1, 0, 1, 0, -2, 0, -1.4901161e-07, -8.742278e-09, 0.03, 0)
 target_position = Vector3(0, -0.4, 0.7)
+
+[node name="Character" parent="." unique_id=1682260482 instance=ExtResource("3_hhoun")]
+transform = Transform3D(0.4, 0, 0, 0, 0.4, 0, 0, 0, 0.4, 0, 0.59999996, 0)
 
 [connection signal="body_entered" from="Area3D" to="." method="_on_area_3d_body_entered"]

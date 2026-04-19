@@ -30,6 +30,7 @@ sky = SubResource("Sky_f2txt")
 
 [node name="Player" parent="." unique_id=1574667455 node_paths=PackedStringArray("shiftlockLogo", "HealthBar", "spawn") instance=ExtResource("1_u52ul")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12.335276, 1, 4.7023525)
+State = 1
 shiftlockLogo = NodePath("../ShiftlockIcon")
 HealthBar = NodePath("../Health")
 spawn = NodePath("../SpawnLocation")

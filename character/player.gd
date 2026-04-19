@@ -10,6 +10,9 @@ var coyote_timer := 0.0
 var truss_timer := 999.0
 var truss_used := false
 
+enum states {Climbing, Idle, Walking, Falling, Jumping}
+
+@export var State: states
 
 var jump_lock := 0.0
 
@@ -39,17 +42,65 @@ var just_jumped_off := false
 @onready var cam = $Camera3D
 @onready var ray = $RayCast3D
 @onready var brickCollision = $Area3D
-
+@onready var player = $Character
+@onready var playerAnims = $Character/AnimationPlayer
 @export var HealthBar: ProgressBar
 @export var spawn: Node3D
 
 @export var voidDepth := 50.0
 @export var shiftlock := false
-
+var last_state = -1
 var is_climbing := false
 var climb_normal := Vector3.ZERO
 
+func set_climb_anim(pause: bool, dir: String):
+	if pause:
+		playerAnims.speed_scale = 0.0
+	else:
+		if dir == "Up":
+			playerAnims.speed_scale = 1.0
+		elif dir == "Down":
+			playerAnims.speed_scale = -1.0
+		else:
+			playerAnims.speed_scale = 0.0
 
+func update_anim():
+	if State == last_state:
+		return
+
+	match State:
+		states.Idle:
+			playerAnims.play("idle", 0.1)
+			playerAnims.speed_scale = 1.0
+
+		states.Walking:
+			playerAnims.play("walk", 0.1)
+			playerAnims.speed_scale = 1.0
+
+		states.Climbing:
+			playerAnims.play("climb", 0.2)
+
+		states.Jumping:
+			playerAnims.play("jump", 0.1)
+			playerAnims.speed_scale = 1.0
+
+		states.Falling:
+			playerAnims.play("fall", 0.1)
+			playerAnims.speed_scale = 1.0
+
+	last_state = State
+func update_state():
+	if is_climbing:
+		State = states.Climbing
+	elif not is_on_floor():
+		if velocity.y > 0:
+			State = states.Jumping
+		else:
+			State = states.Falling
+	elif Vector3(velocity.x, 0, velocity.z).length() > 0.1:
+		State = states.Walking
+	else:
+		State = states.Idle
 func _ready() -> void:
 	reset()
 
@@ -85,7 +136,6 @@ func reset():
 
 
 func _physics_process(delta: float) -> void:
-
 	# timers
 	truss_timer += delta
 	jump_lock = max(jump_lock - delta, 0.0)
@@ -139,13 +189,14 @@ func _physics_process(delta: float) -> void:
 	else:
 		coyote_timer = max(coyote_timer - delta, 0.0)
 
-	# jump (GROUND)
+
 	if Input.is_action_pressed("ui_accept"):
+		print(coyote_timer)
 		if coyote_timer > 0 and not is_climbing and jump_lock <= 0.0:
 			velocity.y = JUMP_VELOCITY
 			coyote_timer = 0
 
-	# jump (TRUSS)
+
 	if Input.is_action_just_pressed("ui_accept"):
 		if is_climbing:
 			velocity += climb_normal * jump_off_force + Vector3.UP * jump_up_force
@@ -178,10 +229,13 @@ func _physics_process(delta: float) -> void:
 
 		if Input.is_action_pressed("ui_up"):
 			velocity.y = -climb_speed
+			set_climb_anim(false, "Up")
 		elif Input.is_action_pressed("ui_down"):
 			velocity.y = climb_speed
+			set_climb_anim(false, "Down")
 		else:
 			velocity.y = 0
+			set_climb_anim(true, "Idle")
 
 	elif not just_jumped_off:
 		if direction != Vector3.ZERO:
@@ -218,6 +272,8 @@ func _physics_process(delta: float) -> void:
 				rotation.y = lerp_angle(rotation.y, target_angle, 10 * delta)
 
 	move_and_slide()
+	update_state()
+	update_anim()
 	just_jumped_off = false
 
 
