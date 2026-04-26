@@ -2,18 +2,18 @@ extends Control
 
 func toggle_paused():
 	get_tree().paused = !get_tree().paused
-	var psed = get_tree().paused
+	var paused = get_tree().paused
 	var intween = create_tween()
 	intween.set_ease(Tween.EASE_IN_OUT)
 	intween.set_trans(Tween.TRANS_CUBIC)
 	intween.bind_node(self)
-	intween.tween_property(self,"position",Vector2.ZERO if psed else Vector2(0,-720),.5)
+	intween.tween_property(self,"position",Vector2.ZERO if paused else Vector2(0,-720),.5)
 	if !get_tree().paused: get_viewport().gui_release_focus()
 	@warning_ignore("incompatible_ternary")
-	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE if psed or !GameManager.shiftlocked else Input.MOUSE_MODE_CAPTURED
+	Input.mouse_mode = Input.MOUSE_MODE_HIDDEN if paused or !GameManager.shiftlocked else Input.MOUSE_MODE_CAPTURED
 	var find = get_tree().current_scene.get_node("ShiftlockIcon")
 	if find:
-		find.visible = !psed and GameManager.shiftlocked
+		find.visible = !paused and GameManager.shiftlocked
 
 func _input(event: InputEvent) -> void:
 	if event is InputEventKey:

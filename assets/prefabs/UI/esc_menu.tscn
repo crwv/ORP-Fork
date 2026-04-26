@@ -17,6 +17,7 @@ offset_top = -720.0
 offset_bottom = -720.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
 script = ExtResource("1_vgykv")
 
 [node name="ColorRect" type="ColorRect" parent="." unique_id=48466012]
@@ -24,6 +25,7 @@ z_index = -1
 layout_mode = 0
 offset_right = 1280.0
 offset_bottom = 720.0
+mouse_filter = 2
 color = Color(0.17254902, 0.17254902, 0.17254902, 0.34509805)
 
 [node name="Sensitivity" parent="." unique_id=736337411 instance=ExtResource("1_lxta3")]

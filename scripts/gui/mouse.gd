@@ -2,17 +2,45 @@ extends AnimatedSprite2D
 
 enum ICON {NORMAL, CLICK, SHIFTLOCK}
 
+var last_pos:Vector2
+var last_rotating = false
+
 func _process(_delta: float) -> void:
 	var is_first_person = false
+	var rotating = false
+	var v_size = Vector2(get_viewport().size.x,get_viewport().size.y)
+	var mouse_pos = get_viewport().get_mouse_position()/v_size
+	
 	if GameManager.Camera:
 		is_first_person = (GameManager.Camera.mode == GameManager.Camera.CameraMode.FIRSTPERSON)
-
-	if is_first_person or GameManager.shiftlocked:
-		global_position = get_viewport_rect().size / 2
+		rotating = GameManager.Camera.rotating
+		
+		if Input.is_action_just_pressed("shift_lock"):
+			GameManager.shiftlocked = !GameManager.shiftlocked
 	else:
-		if Input.get_mouse_mode() != Input.MOUSE_MODE_CAPTURED:
+		GameManager.shiftlocked = false
+	
+	if rotating and !last_rotating:
+		last_pos = mouse_pos
+		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+	
+	if GameManager.shiftlocked or is_first_person:
+		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+		global_position = get_viewport_rect().size / 2
+		last_pos = Vector2.ONE/2
+	elif !rotating:
+		if Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
+			Input.mouse_mode = Input.MOUSE_MODE_HIDDEN
+			get_viewport().warp_mouse(last_pos*v_size)
+	
+	if !Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
+		if !last_rotating and !(get_global_mouse_position().distance_to(get_viewport_rect().size/2)<5):
 			global_position = get_global_mouse_position()
-
+		else:
+			global_position = last_pos*v_size
+	
+	last_rotating = rotating
+	
 	if GameManager.shiftlocked:
 		set_icon(ICON.SHIFTLOCK)
 	elif get_viewport().gui_get_hovered_control():
@@ -26,6 +54,12 @@ func set_inverted(val:bool):
 
 func set_icon(icon:ICON):
 	frame = icon
+	if frame == 2:
+		offset = Vector2.ZERO
+		scale = Vector2.ONE
+	else:
+		offset = Vector2.ONE*16
+		scale = Vector2.ONE*1.5
 	pass
 
 func _input(event: InputEvent) -> void:

@@ -44,8 +44,6 @@ func _input(event):
 		step_index -= 1
 		yaw = wrapf(step_index * step, -PI, PI)
 		snapping = true
-	if Input.is_action_just_pressed("shift_lock"):
-		GameManager.shiftlocked = !GameManager.shiftlocked
 
 	if Input.is_action_pressed("zoom_in"):
 		target_distance -= zoom_speed
@@ -62,7 +60,7 @@ func _input(event):
 		rotating = true
 	
 	target.visible = mode == CameraMode.NORMAL
-	target.follow_camera = GameManager.shiftlocked or mode == CameraMode.FIRSTPERSON
+	target.rotation_locked = GameManager.shiftlocked or mode == CameraMode.FIRSTPERSON
 
 	if event is InputEventMouseMotion:
 		if rotating or GameManager.shiftlocked:

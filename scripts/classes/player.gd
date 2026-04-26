@@ -4,7 +4,7 @@ class_name PlayerClass
 const SPEED = 4
 const JUMP_VELOCITY = 7.5
 
-var follow_camera:bool :
+var rotation_locked:bool :
 	get():
 		return cam.mode == cam.CameraMode.FIRSTPERSON or GameManager.shiftlocked
 @onready var cam = $Camera3D
@@ -27,6 +27,7 @@ func update_health_bar():
 		HealthBar.value = (Health / MaxHealth) * 100
 
 func _ready():
+	GameManager.CharacterAdded.emit(self)
 	$Camera3D.top_level = true
 
 func _ground_check():
@@ -44,12 +45,7 @@ func _physics_process(_delta: float) -> void:
 	$TorsoCollision.global_transform = $Character/ObbyAvatar/Skeleton3D/torso/TorsoCollision.global_transform
 	_ground_check()
 	
-	if follow_camera:
-		var target_y = cam.global_rotation.y + PI
-		var rot_diff = wrapf(target_y - global_rotation.y, -PI, PI)
-		var kP = 2000
-		var kD = 10
-		
-		var torque_y = (rot_diff * kP) - (angular_velocity.y * kD)
-		
-		apply_torque(Vector3(0,torque_y * 20.0,0))
+func _integrate_forces(state: PhysicsDirectBodyState3D) -> void:
+	if rotation_locked:
+		var newBasis = Basis(Vector3.UP,cam.rotation.y+PI)
+		state.transform.basis = newBasis

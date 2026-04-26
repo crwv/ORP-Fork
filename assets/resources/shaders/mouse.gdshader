@@ -8,7 +8,7 @@ void vertex() {
 
 void fragment() {
 	if (Inverted) {
-		COLOR = vec4(1.0-COLOR.x,1.0-COLOR.y,COLOR.z,COLOR.a);
+		COLOR = vec4(1.0-COLOR.x,1.0-COLOR.y,1.0-COLOR.z,COLOR.a);
 	}
 }
 

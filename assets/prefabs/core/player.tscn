@@ -7,6 +7,10 @@
 [ext_resource type="Script" uid="uid://c7ypwlbpntcyb" path="res://scripts/classes/StateHandler/states/Balancing.gd" id="5_mr5rw"]
 [ext_resource type="Script" uid="uid://dqyppesur67h7" path="res://scripts/classes/StateHandler/states/InAir.gd" id="6_bwtit"]
 [ext_resource type="Script" uid="uid://cnj8j7cbr4ruf" path="res://scripts/classes/StateHandler/states/Grounded.gd" id="7_nf5u3"]
+[ext_resource type="Script" uid="uid://dhtrxbilcquk" path="res://scripts/classes/StateHandler/states/Walking.gd" id="8_mr5rw"]
+
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_mr5rw"]
+friction = 0.5
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_hhoun"]
 size = Vector3(0.8, 1.14, 0.2)
@@ -20,6 +24,7 @@ points = PackedVector3Array(-0.52889997, -0.5288999, -0.5288999, 0.52889514, 0.5
 [node name="Player" type="RigidBody3D" unique_id=850915531]
 process_priority = 2
 process_physics_priority = 2
+physics_material_override = SubResource("PhysicsMaterial_mr5rw")
 inertia = Vector3(1, 1, 1)
 script = ExtResource("1_monf5")
 
@@ -108,8 +113,8 @@ metadata/_custom_type_script = "uid://ypneyahtpnck"
 
 [node name="Balancing" type="Node" parent="StateMachine" unique_id=786869794]
 script = ExtResource("5_mr5rw")
-kP = 2500.0
-kD = 100.0
+kP = 5000.0
+kD = 200.0
 metadata/_custom_type_script = "uid://c7ypwlbpntcyb"
 
 [node name="InAir" type="Node" parent="StateMachine/Balancing" unique_id=1104173307]
@@ -121,5 +126,9 @@ script = ExtResource("7_nf5u3")
 kP = 900.0
 kD = 60.0
 metadata/_custom_type_script = "uid://cnj8j7cbr4ruf"
+
+[node name="WalkingState" type="Node" parent="StateMachine/Balancing/Grounded" unique_id=515077390]
+script = ExtResource("8_mr5rw")
+metadata/_custom_type_script = "uid://dhtrxbilcquk"
 
 [connection signal="body_entered" from="Area3D" to="." method="_on_area_3d_body_entered"]
