@@ -7,7 +7,7 @@ signal CharacterAdded(Player)
 @export var currentLevel:String
 @export var Camera:CamStuff
 @export var shiftlocked:bool = false
-
+@export var alljump:bool = false
 const TARGETRATIO = 16.0/9.0
 func ensure_levels_folder(): # makes sure that levels exists lol
 	var dir = DirAccess.open("user://")
