@@ -9,7 +9,7 @@ signal MaxFPSChanged
 		FOVChanged.emit(new)
 		fov = new
 @export var sensitivity:float = 1.0
-@export var maxFPS:int = 120 : 
+@export var maxFPS:int = 80 : 
 	set(new):
 		MaxFPSChanged.emit(new)
 		maxFPS = new
