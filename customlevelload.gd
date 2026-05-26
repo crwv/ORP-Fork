@@ -2,6 +2,7 @@ extends Node3D
 
 @onready var part = preload("res://assets/prefabs/building/Old/Part.tscn")
 @onready var cylinder = preload("res://assets/prefabs/building/Old/cylinder.tscn")
+@onready var wedge = preload("res://assets/prefabs/building/Old/wedge.tscn")
 @onready var truss = preload("res://assets/prefabs/building/Old/Truss.tscn")
 @onready var player = $Player
 
@@ -24,8 +25,6 @@ func load_level(path):
 		return null
 
 	return json.data
-
-
 
 func addCheckpoint(pos: Vector3, rot: Vector3, vel: Vector3, cam_mode: int, cam_transform: Transform3D, shiftlock: bool):
 	if GameManager.alljump:
@@ -91,7 +90,6 @@ func to_color(d):
 		return Color.WHITE
 	return Color(d.get("R", 1), d.get("G", 1), d.get("B", 1))
 
-
 func addPart(pos, rot_deg, size, classname, color):
 	var newpart = part.instantiate()
 	add_child(newpart)
@@ -155,6 +153,78 @@ func addCylinder(pos, rot_deg, size, color):
 			mesh.mesh.material = mesh.mesh.material.duplicate()
 			mesh.mesh.material.set_shader_parameter("base_color", color)
 
+func addWedge(pos, rot_deg, size, color):
+	var newwedge = wedge.instantiate()
+	add_child(newwedge)
+	var mesh = newwedge.get_node("MeshInstance3D") as MeshInstance3D
+	var coll = newwedge.get_node("CollisionShape3D")
+	newwedge.position = pos
+	
+	# to specifically fix one practical edge case
+	var corrected_rot = rot_deg
+	if rot_deg.x == 90 and rot_deg.z == 180:
+		corrected_rot = Vector3(-90, rot_deg.y, rot_deg.z)
+	elif rot_deg.x == -90 and rot_deg.z == 180:
+		corrected_rot = Vector3(90, rot_deg.y, rot_deg.z)
+		
+	var rot_rad = Vector3(
+		deg_to_rad(corrected_rot.x),
+		deg_to_rad(corrected_rot.y),
+		deg_to_rad(corrected_rot.z)
+	)
+	# transforming the vertices of the origin to the player's vertices
+	var basis = Basis.from_euler(rot_rad, EULER_ORDER_ZXY)
+	
+	var h = max(size.y, 0.001)
+	var w = max(size.x, 0.001)
+	var l = max(size.z, 0.001)
+	# need this to map each of the vertices individually
+	var origin_vertices = PackedVector3Array([
+		# bottom face
+		Vector3(-w/2, -h/2, l/2), Vector3(w/2, -h/2, l/2), Vector3(w/2, -h/2, -l/2),
+		Vector3(-w/2, -h/2, l/2), Vector3(w/2, -h/2, -l/2), Vector3(-w/2, -h/2, -l/2),
+		# back face
+		Vector3(-w/2, -h/2, l/2), Vector3(w/2, h/2, l/2), Vector3(w/2, -h/2, l/2),
+		Vector3(-w/2, -h/2, l/2), Vector3(-w/2, h/2, l/2), Vector3(w/2, h/2, l/2),
+		# slope face
+		Vector3(-w/2, -h/2, -l/2), Vector3(w/2, h/2, l/2), Vector3(-w/2, h/2, l/2),
+		Vector3(-w/2, -h/2, -l/2), Vector3(w/2, -h/2, -l/2), Vector3(w/2, h/2, l/2),
+		# left face
+		Vector3(-w/2, -h/2, l/2), Vector3(-w/2, -h/2, -l/2), Vector3(-w/2, h/2, l/2),
+		# right face
+		Vector3(w/2, -h/2, l/2), Vector3(w/2, h/2, l/2), Vector3(w/2, -h/2, -l/2),
+	])
+	var final_vertices = PackedVector3Array()
+	for vert in origin_vertices:
+		final_vertices.append(basis * vert)
+		
+	if coll.shape:
+		var shape = ConvexPolygonShape3D.new()
+		shape.points = final_vertices
+		coll.shape = shape
+		
+	var normals = PackedVector3Array()
+	for i in range(0, final_vertices.size(), 3):
+		var n = (final_vertices[i + 2] - final_vertices[i]).cross(
+			final_vertices[i + 1] - final_vertices[i]).normalized()
+		normals.append(n)
+		normals.append(n)
+		normals.append(n)
+		
+	var arrays = []
+	arrays.resize(Mesh.ARRAY_MAX)
+	arrays[Mesh.ARRAY_VERTEX] = final_vertices
+	arrays[Mesh.ARRAY_NORMAL] = normals
+	
+	if mesh.mesh.material:
+		var wedge_mesh = mesh.mesh.material.duplicate() as ShaderMaterial
+		wedge_mesh.set_shader_parameter("base_color", color)
+		
+		var arr_mesh = ArrayMesh.new()
+		arr_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+		arr_mesh.surface_set_material(0, wedge_mesh)
+		mesh.mesh = arr_mesh
+
 func addTruss(pos, rot_deg, size, _classname):
 	var newtruss = truss.instantiate()
 	add_child(newtruss)
@@ -179,14 +249,21 @@ func spawn_node(node_data):
 
 	if classname == "Part":
 		var p = node_data.get("Properties", {})
-		# TODO modify the exporter so that it stores the shape of the object in data
+		# main repo note: modify the exporter so it stores the shape of the object
 		var shape = node_data.get("Shape", "Block")
 
 		if shape == "Cylinder":
 			addCylinder(
 				to_vec3(p.get("Position")),
 				to_vec3(p.get("Rotation")),
-				to_vec3(p.get("Size")), # don't accept cylindrical spawns
+				to_vec3(p.get("Size")),
+				to_color(p.get("Color"))
+			)
+		elif shape == "Wedge":
+			addWedge(
+				to_vec3(p.get("Position")),
+				to_vec3(p.get("Rotation")),
+				to_vec3(p.get("Size")),
 				to_color(p.get("Color"))
 			)
 		else:
@@ -225,7 +302,6 @@ func _input(_event: InputEvent) -> void:
 	if Input.is_action_just_pressed("removeCheckpoint"):
 		removeLastCheckpoint()
 
-
 func loadstuff(data):
 	spawn_point = null
 
@@ -239,8 +315,6 @@ func loadstuff(data):
 		spawn_node(child)
 
 	print("Level loaded. Spawn =", spawn_point)
-
-
 
 func _ready() -> void:
 	var leveldata = load_level(GameManager.currentLevel)
