@@ -32,6 +32,39 @@ func _on_pressed() -> void:
 	owner.load_all_levels()
 "
 
+[sub_resource type="Theme" id="Theme_ptake"]
+
+[sub_resource type="GDScript" id="GDScript_hubol"]
+resource_name = "ClickThing"
+script/source = "extends RichTextLabel
+
+var version = self
+var whitespace_remover = RegEx.new()
+
+func _ready():	
+	# -- Version Checking -- #
+	if GameManager.version_latest == \"\": await GameManager.VersionLoaded
+	whitespace_remover.compile(\"\\\\s+\")
+	
+	var curr_version = whitespace_remover.sub(GameManager.version,\"\",true)
+	var latest_version = whitespace_remover.sub(GameManager.version_latest,\"\",true)
+	
+	if latest_version == \"\":
+		version.text = \"Failed to fetch latest version!\"
+		version.add_theme_color_override(\"font_color\",Color(1,0,0))
+		return
+	
+	if curr_version != latest_version:
+		version.add_theme_color_override(\"font_color\",Color(1,0,0))
+		version.text = \"v%s is outdated! latest version: v%s\" % [curr_version, latest_version]
+	else:
+		version.text = \"v\" + curr_version + \" (latest) \"
+	version.text = '[url=https://github.com/GameabillityOnYt/obbying-revival-project/releases][u]%s[/u][/url]' % version.text
+
+func _on_meta_clicked(meta: Variant) -> void:
+	OS.shell_open(meta)
+"
+
 [sub_resource type="Shader" id="Shader_8a8k8"]
 code = "shader_type canvas_item;
 
@@ -214,12 +247,17 @@ theme_override_font_sizes/font_size = 20
 autowrap_mode = 2
 clip_text = true
 
-[node name="Version" type="Label" parent="Main" unique_id=71385192]
+[node name="Version" type="RichTextLabel" parent="Main" unique_id=1096078958]
 offset_left = -638.0
 offset_top = 339.0
-offset_right = -484.0
-offset_bottom = 362.0
-text = "VERSION TEXT HERE"
+offset_right = -328.0
+offset_bottom = 370.0
+focus_behavior_recursive = 2
+mouse_behavior_recursive = 2
+theme = SubResource("Theme_ptake")
+bbcode_enabled = true
+text = "[u]Version[/u]"
+script = SubResource("GDScript_hubol")
 
 [node name="BG" type="Control" parent="." unique_id=500703345]
 layout_mode = 3
@@ -463,6 +501,7 @@ offset_bottom = 134.0
 [connection signal="pressed" from="Main/Play" to="." method="_on_play_pressed"]
 [connection signal="pressed" from="Main/Panel/Open Location" to="Main/Panel/Open Location" method="_on_pressed"]
 [connection signal="pressed" from="Main/Panel/Reload" to="Main/Panel/Reload" method="_on_pressed"]
+[connection signal="meta_clicked" from="Main/Version" to="Main/Version" method="_on_meta_clicked"]
 [connection signal="pressed" from="Settings/Back" to="." method="_on_return_to_main_pressed"]
 [connection signal="pressed" from="Settings/Avatar" to="." method="_on_avatar_pressed"]
 [connection signal="item_selected" from="Settings/RendererSwitcher" to="Settings/RendererSwitcher" method="_on_item_selected"]
