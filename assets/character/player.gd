@@ -28,11 +28,10 @@ var instakills := MaxHealth
 var regen_timer := 0.0
 var took_damage := false
 
-# camera and trusses etc
+# Truss Variables
 @export var sensitivity := 0.005
 @export var climb_speed := 10.0
 @export var stick_force := 2.0
-
 @export var jump_off_force := 15.0 
 @export var jump_up_force := 1.1
 var knockback_timer := 0.0
@@ -40,16 +39,29 @@ var knockback_timer := 0.0
 
 var just_jumped_off := false
 @export var shiftlockLogo: TextureRect
+
+# -------  loading player components ---------
+
+# truss flick rays
+
 @onready var flickRay = $flickRay
 @onready var flickRayBack = $flickRay2
 @onready var flickRayRight = $flickRay3
 @onready var flickRayLeft = $flickRay4
+
+# camera 
+
 @onready var cam: CamStuff = $Camera3D
-@onready var ray = $RayCast3D
-@onready var topray = $RayCast3D2
+
+# truss rays
+
+@onready var ray = $TrussRay
+@onready var topray = $GlideRay
 @onready var glidetop = $GlideTop
 @onready var glidebottom = $GlideBottom
-@onready var brickCollision = $Area3D
+
+# player and player animations
+
 @onready var player = $Character
 @onready var playerAnims = $Character/AnimationPlayer
 
@@ -57,11 +69,13 @@ var just_jumped_off := false
 var climb_grace := 0.0
 var last_truss_point := Vector3.ZERO
 
+# GUI
+
 @export var timer: Control
 @export var HealthBar: ProgressBar
 @export var spawn: Node3D
 
-var rotation_locked: bool :
+var rotation_locked: bool : # checks if ur in firstperson or ur shiftlocked if so your rotation is locked
 	get():
 		return cam.mode == cam.CameraMode.FIRSTPERSON or GameManager.shiftlocked
 @export var voidDepth := 300.0
@@ -69,7 +83,7 @@ var last_state = -1
 var is_climbing := false
 var climb_normal := Vector3.ZERO
 
-func set_char_transparency(alpha: float):
+func set_char_transparency(alpha: float): # for ghost mode etc
 	var charNode = $Character
 	if not charNode:
 		print("char not found :(")
@@ -205,7 +219,7 @@ func _physics_process(delta: float) -> void:
 	truss_timer += delta
 	jump_lock = max(jump_lock - delta, 0.0)
 	if cam.target_distance < 5:
-		set_char_transparency(0.5)
+		set_char_transparency(0.3)
 	else:
 		set_char_transparency(1.0)
 		

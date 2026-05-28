@@ -1,3 +1,5 @@
+# variables
+
 extends Node2D
 
 @onready var Main:Node2D = $Main
@@ -52,18 +54,18 @@ func _file_dragged(files:PackedStringArray):
 			push_warning("file not json durr")
 	pass
 
-func _on_play_pressed() -> void:
+func _on_play_pressed() -> void: # when you press play
 	get_tree().change_scene_to_file("res://custom.tscn")
 	
 	if DiscordRPCManager != null:
 		DiscordRPCManager.playing(GameManager.currentLevel)
 
 
-func _on_settings_pressed() -> void:
+func _on_settings_pressed() -> void: # when you press settings it makes your camera go to the settings area
 	cam.global_position = Settings.global_position
 	
 	if DiscordRPCManager != null:
-		DiscordRPCManager.settings()
+		DiscordRPCManager.settings() # discordrpc settings thingy
 
 
 func _on_return_to_main_pressed() -> void:
@@ -78,7 +80,7 @@ func _on_return_to_settings_pressed() -> void:
 func _on_avatar_pressed() -> void:
 	cam.global_position = AvatarCustom.global_position
 
-func load_level(path):
+func load_level(path): # loads level data and returns it
 	var file = FileAccess.open(path,FileAccess.READ)
 	if file == null:
 		print("failed to open file " + path)
@@ -92,7 +94,7 @@ func load_level(path):
 	return data
 
 
-func load_all_levels():
+func load_all_levels(): # loads all levels in the folder and then adds it to the level list
 	for x in list.get_children():
 		x.call_deferred("queue_free")
 
@@ -120,7 +122,7 @@ func load_all_levels():
 		)
 
 
-func fetch_levels():
+func fetch_levels(): # fetches all ur levels
 	var levels = []
 	var dir = DirAccess.open("user://levels")
 	
