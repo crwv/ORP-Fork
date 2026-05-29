@@ -443,7 +443,7 @@ func _physics_process(delta: float) -> void:
 			else:
 				velocity.x = knockback_dir.x * 38.0
 				velocity.z = knockback_dir.z * 38.0
-				velocity.y = 34.0
+				velocity.y = 45.3
 			
 			global_position += knockback_dir * 0.05
 			
